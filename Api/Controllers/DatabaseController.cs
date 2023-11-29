@@ -15,7 +15,7 @@ public class DatabaseController : ControllerBase
     }
 
     [HttpGet("connection")]
-    public async Task<ActionResult<Item>> GetConnection()
+    public ActionResult<Item> GetConnection()
     {
         return Ok(_context.Database.GetConnectionString());
     }
