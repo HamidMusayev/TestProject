@@ -1,3 +1,7 @@
+using Api.Contexts;
+using Microsoft.EntityFrameworkCore;
+using System.Configuration;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -9,6 +13,10 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddHealthChecks();
 
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+
+builder.Services.AddDbContext<TestDataContext>(options => options.UseNpgsql(connectionString));
+
 var app = builder.Build();
 
 app.MapHealthChecks("/hc");
@@ -17,7 +25,7 @@ app.MapHealthChecks("/hc");
 //if (app.Environment.IsDevelopment())
 //{
 app.UseSwagger();
-    app.UseSwaggerUI();
+app.UseSwaggerUI();
 //}
 
 app.UseHttpsRedirection();

@@ -1,69 +1,98 @@
-﻿using Api;
+﻿using Api.Contexts;
+using Api.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 [Route("api/[controller]")]
 [ApiController]
-public class ItemController : ControllerBase
+public class YourEntityController : ControllerBase
 {
-    private readonly List<Item> _items = new List<Item>
-    {
-        new Item { ItemId = 1, Name = "Item 1", Price = 10.99m },
-        new Item { ItemId = 2, Name = "Item 2", Price = 20.49m }
-    };
+    private readonly TestDataContext _context;
 
+    public YourEntityController(TestDataContext context)
+    {
+        _context = context;
+    }
+
+    // GET: api/YourEntity
     [HttpGet]
-    public ActionResult<IEnumerable<Item>> Get()
+    public async Task<ActionResult<IEnumerable<Item>>> Get()
     {
-        return Ok(_items);
+        return await _context.Items.ToListAsync();
     }
 
+    // GET: api/YourEntity/5
     [HttpGet("{id}")]
-    public ActionResult<Item> Get(int id)
+    public async Task<ActionResult<Item>> Get(int id)
     {
-        var item = _items.Find(i => i.ItemId == id);
-        if (item == null)
+        var yourEntity = await _context.Items.FindAsync(id);
+
+        if (yourEntity == null)
         {
             return NotFound();
         }
 
-        return Ok(item);
+        return yourEntity;
     }
 
+    // POST: api/YourEntity
     [HttpPost]
-    public ActionResult<Item> Post([FromBody] Item newItem)
+    public async Task<ActionResult<Item>> Post(Item yourEntity)
     {
-        newItem.ItemId = _items.Count + 1;
-        _items.Add(newItem);
+        _context.Items.Add(yourEntity);
+        await _context.SaveChangesAsync();
 
-        return CreatedAtAction(nameof(Get), new { id = newItem.ItemId }, newItem);
+        return CreatedAtAction(nameof(Item), new { id = yourEntity.ItemId }, yourEntity);
     }
 
+    // PUT: api/YourEntity/5
     [HttpPut("{id}")]
-    public IActionResult Put(int id, [FromBody] Item updatedItem)
+    public async Task<IActionResult> Put(int id, Item yourEntity)
     {
-        var existingItem = _items.Find(i => i.ItemId == id);
-        if (existingItem == null)
+        if (id != yourEntity.ItemId)
         {
-            return NotFound();
+            return BadRequest();
         }
 
-        existingItem.Name = updatedItem.Name;
-        existingItem.Price = updatedItem.Price;
+        _context.Entry(yourEntity).State = EntityState.Modified;
+
+        try
+        {
+            await _context.SaveChangesAsync();
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            if (!IsExists(id))
+            {
+                return NotFound();
+            }
+            else
+            {
+                throw;
+            }
+        }
 
         return NoContent();
     }
 
+    // DELETE: api/YourEntity/5
     [HttpDelete("{id}")]
-    public IActionResult Delete(int id)
+    public async Task<IActionResult> Delete(int id)
     {
-        var item = _items.Find(i => i.ItemId == id);
-        if (item == null)
+        var yourEntity = await _context.Items.FindAsync(id);
+        if (yourEntity == null)
         {
             return NotFound();
         }
 
-        _items.Remove(item);
+        _context.Items.Remove(yourEntity);
+        await _context.SaveChangesAsync();
 
         return NoContent();
+    }
+
+    private bool IsExists(int id)
+    {
+        return _context.Items.Any(e => e.ItemId == id);
     }
 }
