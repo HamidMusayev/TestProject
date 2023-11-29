@@ -21,6 +21,12 @@ public class YourEntityController : ControllerBase
         return await _context.Items.ToListAsync();
     }
 
+    [HttpGet("connection")]
+    public async Task<ActionResult<Item>> GetConnection()
+    {
+        return Ok(_context.Database.GetConnectionString());
+    }
+
     // GET: api/YourEntity/5
     [HttpGet("{id}")]
     public async Task<ActionResult<Item>> Get(int id)
