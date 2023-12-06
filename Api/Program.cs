@@ -12,7 +12,8 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddHealthChecks();
 
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection"); //Environment.GetEnvironmentVariable("POSTGRES_CONNECTION_STRING");
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+// Environment.GetEnvironmentVariable("POSTGRES_CONNECTION_STRING");
 
 builder.Services.AddDbContext<TestDataContext>(options => options.UseNpgsql(connectionString));
 
